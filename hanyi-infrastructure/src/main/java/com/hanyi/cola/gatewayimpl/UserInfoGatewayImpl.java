@@ -13,6 +13,7 @@ import com.hanyi.cola.gatewayimpl.database.mapper.UserInfoMapper;
 import com.hanyi.cola.gatewayimpl.database.po.UserInfoPO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -63,6 +64,7 @@ public class UserInfoGatewayImpl implements UserInfoGateway {
      * @param userInfoDO 用户详情对象
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void registerUserInfo(UserInfoDO userInfoDO) {
         StateMachineBuilder<UserStatusEnum, StatusEventEnum, String> machineBuilder = StateMachineBuilderFactory.create();
 
@@ -89,6 +91,7 @@ public class UserInfoGatewayImpl implements UserInfoGateway {
      * @param userInfoDO 用户详情对象
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void changeStatusToOnline(UserInfoDO userInfoDO) {
         StateMachineBuilder<UserStatusEnum, StatusEventEnum, String> machineBuilder = StateMachineBuilderFactory.create();
 
@@ -115,6 +118,7 @@ public class UserInfoGatewayImpl implements UserInfoGateway {
      * @param userInfoDO 用户详情对象
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void cancelledUserStatus(UserInfoDO userInfoDO) {
         StateMachineBuilder<UserStatusEnum, StatusEventEnum, String> machineBuilder = StateMachineBuilderFactory.create();
         machineBuilder.externalTransitions()
