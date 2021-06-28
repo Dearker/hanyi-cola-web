@@ -33,6 +33,11 @@ public class UserInfoPO implements Serializable {
     private String userName;
 
     /**
+     * 用户状态，0表示已注册，1表示在线，2表示离线，3表示已销户
+     */
+    private Integer userStatus;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createTime;

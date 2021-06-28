@@ -1,7 +1,6 @@
 package com.hanyi.cola.api;
 
 import com.hanyi.cola.dto.UserInfoDTO;
-
 import java.util.List;
 
 /**
@@ -20,7 +19,6 @@ public interface UserInfoService {
      * @param userInfoDto 用户信息dto
      */
     void addUserInfoDto(UserInfoDTO userInfoDto);
-
 
     /**
      * 找到所有用户信息列表

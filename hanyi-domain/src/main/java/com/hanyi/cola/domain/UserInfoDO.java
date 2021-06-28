@@ -1,7 +1,6 @@
 package com.hanyi.cola.domain;
 
 import lombok.Data;
-
 import java.io.Serializable;
 
 /**
@@ -24,5 +23,15 @@ public class UserInfoDO implements Serializable {
      * 用户名
      */
     private String userName;
+
+    /**
+     * 当前的状态
+     */
+    private Integer currentStatus;
+
+    /**
+     * 更新状态
+     */
+    private Integer updateStatus;
 
 }

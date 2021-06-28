@@ -28,4 +28,24 @@ public interface UserInfoGateway {
      */
     List<UserInfoDO> findAllList();
 
+    /**
+     * 注册用户信息
+     *
+     * @param userInfoDO 用户详情对象
+     */
+    void registerUserInfo(UserInfoDO userInfoDO);
+
+    /**
+     * 修改用户状态为在线
+     *
+     * @param userInfoDO 用户详情对象
+     */
+    void changeStatusToOnline(UserInfoDO userInfoDO);
+
+    /**
+     * 注销用户状态
+     *
+     * @param userInfoDO 用户详情对象
+     */
+    void cancelledUserStatus(UserInfoDO userInfoDO);
 }

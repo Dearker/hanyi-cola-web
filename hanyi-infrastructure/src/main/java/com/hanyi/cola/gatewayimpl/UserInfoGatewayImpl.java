@@ -1,6 +1,12 @@
 package com.hanyi.cola.gatewayimpl;
 
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.cola.statemachine.StateMachine;
+import com.alibaba.cola.statemachine.builder.StateMachineBuilder;
+import com.alibaba.cola.statemachine.builder.StateMachineBuilderFactory;
 import com.hanyi.cola.assembler.UserInfoAssembler;
+import com.hanyi.cola.common.enums.StatusEventEnum;
+import com.hanyi.cola.common.enums.UserStatusEnum;
 import com.hanyi.cola.domain.UserInfoDO;
 import com.hanyi.cola.gateway.UserInfoGateway;
 import com.hanyi.cola.gatewayimpl.database.mapper.UserInfoMapper;
@@ -8,7 +14,9 @@ import com.hanyi.cola.gatewayimpl.database.po.UserInfoPO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * <p>
@@ -47,5 +55,82 @@ public class UserInfoGatewayImpl implements UserInfoGateway {
     public List<UserInfoDO> findAllList() {
         List<UserInfoPO> userInfoPoList = userInfoMapper.selectList(null);
         return UserInfoAssembler.toDoList(userInfoPoList);
+    }
+
+    /**
+     * 注册用户信息
+     *
+     * @param userInfoDO 用户详情对象
+     */
+    @Override
+    public void registerUserInfo(UserInfoDO userInfoDO) {
+        StateMachineBuilder<UserStatusEnum, StatusEventEnum, String> machineBuilder = StateMachineBuilderFactory.create();
+
+        Integer currentStatus = userInfoDO.getCurrentStatus();
+        machineBuilder.internalTransition()
+                .within(UserStatusEnum.REGISTERED)
+                .on(StatusEventEnum.REGISTER_EVENT)
+                .when(StrUtil::isNotBlank)
+                .perform((from, to, event, context) -> {
+                    UserInfoPO userInfoPo = new UserInfoPO();
+                    userInfoPo.setId(userInfoDO.getId());
+                    userInfoPo.setUserStatus(from.getStatus());
+                    userInfoPo.setCreateTime(LocalDateTime.now());
+                    userInfoMapper.insert(userInfoPo);
+                });
+
+        StateMachine<UserStatusEnum, StatusEventEnum, String> build = machineBuilder.build(UUID.randomUUID().toString());
+        build.fireEvent(UserStatusEnum.findStatus(currentStatus), StatusEventEnum.findEvent(currentStatus), "哈士奇");
+    }
+
+    /**
+     * 修改用户状态为在线
+     *
+     * @param userInfoDO 用户详情对象
+     */
+    @Override
+    public void changeStatusToOnline(UserInfoDO userInfoDO) {
+        StateMachineBuilder<UserStatusEnum, StatusEventEnum, String> machineBuilder = StateMachineBuilderFactory.create();
+
+        Integer currentStatus = userInfoDO.getCurrentStatus();
+        machineBuilder.externalTransition()
+                .from(UserStatusEnum.ONLINE)
+                .to(UserStatusEnum.OFFLINE)
+                .on(StatusEventEnum.ONLINE_EVENT)
+                .when(StrUtil::isNotBlank)
+                .perform((from, to, event, context) -> {
+                    UserInfoPO userInfoPo = new UserInfoPO();
+                    userInfoPo.setId(userInfoDO.getId());
+                    userInfoPo.setUserStatus(to.getStatus());
+                    userInfoMapper.updateById(userInfoPo);
+                });
+
+        StateMachine<UserStatusEnum, StatusEventEnum, String> build = machineBuilder.build(UUID.randomUUID().toString());
+        build.fireEvent(UserStatusEnum.findStatus(currentStatus), StatusEventEnum.findEvent(currentStatus), "柯基");
+    }
+
+    /**
+     * 注销用户状态
+     *
+     * @param userInfoDO 用户详情对象
+     */
+    @Override
+    public void cancelledUserStatus(UserInfoDO userInfoDO) {
+        StateMachineBuilder<UserStatusEnum, StatusEventEnum, String> machineBuilder = StateMachineBuilderFactory.create();
+        machineBuilder.externalTransitions()
+                .fromAmong(UserStatusEnum.REGISTERED, UserStatusEnum.ONLINE, UserStatusEnum.OFFLINE)
+                .to(UserStatusEnum.ACCOUNT_CANCELLED)
+                .on(StatusEventEnum.CANCELLED_EVENT)
+                .when(StrUtil::isNotBlank)
+                .perform((from, to, event, context) -> {
+                    UserInfoPO userInfoPo = new UserInfoPO();
+                    userInfoPo.setId(userInfoDO.getId());
+                    userInfoPo.setUserStatus(to.getStatus());
+                    userInfoMapper.updateById(userInfoPo);
+                });
+
+        Integer currentStatus = userInfoDO.getCurrentStatus();
+        StateMachine<UserStatusEnum, StatusEventEnum, String> build = machineBuilder.build(UUID.randomUUID().toString());
+        build.fireEvent(UserStatusEnum.findStatus(currentStatus), StatusEventEnum.findEvent(currentStatus), "柴犬");
     }
 }
