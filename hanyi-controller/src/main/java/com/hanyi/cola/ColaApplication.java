@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author wenchangwei
  * @since 2021/6/27 5:00 下午
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.alibaba.cola","com.hanyi.cola"})
 public class ColaApplication {
 
     public static void main(String[] args) {
